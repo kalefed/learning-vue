@@ -1,9 +1,29 @@
 <script setup>
-import { defineProps } from "vue";
-defineProps({
+import { defineProps, ref, computed } from "vue";
+const props = defineProps({
   job: Object,
 });
+
+// anytime props.job.description or showFullDescription.value changes truncatedDescription is going to run
+// this is because Vue is watching everything that truncatedDescription reads inside it.
+const showFullDescription = ref(false);
+
+const toggleFullDescription = () => {
+  showFullDescription.value = !showFullDescription.value;
+};
+
+// Computed: Re‑run this function only when any of the reactive values it reads changes.
+const truncatedDescription = computed(() => {
+  let description = props.job.description;
+
+  if (!showFullDescription.value) {
+    description = description.substring(0, 90) + "...";
+  }
+
+  return description;
+});
 </script>
+
 <template>
   <div class="bg-white rounded-xl shadow-md relative">
     <div class="p-4">
@@ -13,7 +33,13 @@ defineProps({
       </div>
 
       <div class="mb-5">
-        {{ job.description }}
+        <div>{{ truncatedDescription }}</div>
+        <button
+          @click="toggleFullDescription"
+          class="text-green-500 hover:text-green-600 mb-b"
+        >
+          {{ showFullDescription ? "less" : "more" }}
+        </button>
       </div>
 
       <h3 class="text-green-500 mb-2">{{ job.salary }} / Year</h3>
