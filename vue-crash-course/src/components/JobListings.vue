@@ -1,5 +1,5 @@
 <script setup>
-import { ref, defineProps, onMounted } from "vue";
+import { ref, reactive, defineProps, onMounted } from "vue";
 import JobListing from "./JobListing.vue";
 import axios from "axios";
 
@@ -10,12 +10,19 @@ defineProps({
   showButton: { type: Boolean, default: false },
 });
 
+const state = reactive({
+  jobs: [],
+  isLoading: true,
+});
+
 onMounted(async () => {
   try {
     const response = await axios.get("http://localhost:8000/jobs");
-    jobs.value = response.data;
+    state.jobs = response.data;
   } catch (error) {
     console.error("Error fetching jobs", error);
+  } finally {
+    state.isLoading = false; // not reassigning, just updating value in state object
   }
 });
 </script>
@@ -28,7 +35,7 @@ onMounted(async () => {
       </h2>
       <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
         <JobListing
-          v-for="job in jobs.slice(0, limit || jobs.length)"
+          v-for="job in state.jobs.slice(0, limit || state.jobs.length)"
           :key="job.id"
           :job="job"
         />
